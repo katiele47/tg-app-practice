@@ -7,17 +7,26 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 public class ImplicitIntent extends AppCompatActivity {
 
     private final static String TAG = ImplicitIntent.class.getSimpleName();
+    EditText e1,e2;
+    TextView t1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_implicit_intent);
-    }
+        e1 = (EditText) findViewById(R.id.number_text);
+        e2 = (EditText) findViewById(R.id.number_text2);
+        t1 = (TextView) findViewById(R.id.number_result);
 
+    }
     public void doSomething(View view) {
         switch(view.getId()) {
             case R.id.imp_btn1:
@@ -46,5 +55,17 @@ public class ImplicitIntent extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    public void doAdd(View view) {
+        int num1 = Integer.parseInt(e1.getText().toString());
+        int num2 = Integer.parseInt(e2.getText().toString());
+        int sum = num1 + num2;
+        t1.setText(sum);
+        Log.i(TAG, "Executed last");
+    }
+    public double add(double i1, double i2) {
+        double sum = i1 + i2;
+        return sum;
     }
 }

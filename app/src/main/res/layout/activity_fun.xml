@@ -47,7 +47,7 @@
     </ScrollView>
 
     <EditText
-        android:id="@+id/minutes_text_content"
+        android:id="@+id/number_text"
         android:layout_width="188dp"
         android:layout_height="51dp"
         android:layout_marginStart="8dp"
@@ -67,6 +67,6 @@
         android:layout_marginEnd="56dp"
         android:text="@string/buttonASR"
         android:onClick="returnCalculationInMins"
-        app:layout_constraintBaseline_toBaselineOf="@+id/minutes_text_content"
+        app:layout_constraintBaseline_toBaselineOf="@+id/number_text"
         app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

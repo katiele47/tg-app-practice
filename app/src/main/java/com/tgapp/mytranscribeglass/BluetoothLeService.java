@@ -8,23 +8,34 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.le.BluetoothLeScanner;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.UUID;
 
 /* This service performs GATT connection and broadcasts */
 public class BluetoothLeService extends Service {
+    //Bluetooth Helper constants
+    private static final int REQUEST_ENABLE_BT = 9; //requestCode parameter
+    private BluetoothLeScanner bluetoothLeScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
+    private boolean mScanning;
+    private Handler handler = new Handler();
+    private static final long SCAN_PERIOD = 10000;
 
-
-    // my code (app = server)
+    // My code (app = server)
     private BluetoothManager bluetoothManager;
     private BluetoothAdapter bluetoothAdapter;
+    private String bluetoothDeviceAddress;
     private BluetoothGattServer bluetoothGattServer;
     private Activity activity;
     private BluetoothDevice device;
@@ -41,17 +52,17 @@ public class BluetoothLeService extends Service {
             "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
     public final static String ACTION_GATT_DISCONNECTED =
             "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
-    public final static String ACTION_GATT_SERVICES_DISCOVERED =
-            "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
+    public final static String ACTION_GATT_SERVICES_ADDED =
+            "com.example.bluetooth.le.ACTION_GATT_SERVICES_ADDED";
     public final static String ACTION_DATA_AVAILABLE =
             "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
     public final static String EXTRA_DATA =
             "com.example.bluetooth.le.EXTRA_DATA";
+    public final static String DEVICE_DOES_NOT_SUPPORT_UART =
+            "com.nordicsemi.nrfUART.DEVICE_DOES_NOT_SUPPORT_UART";
 
-/*
-  public final static UUID UUID_CAPTION_TRANSCRIBE =
-       UUID.fromString(SampleGattAttributes.<something>);
-*/
+
+    public final static UUID TRANSCRIBE_GLASS_UUID = UUID.fromString("");
 
     /**
      * Initialize the GATT server instance
@@ -65,15 +76,125 @@ public class BluetoothLeService extends Service {
         }
     }
     /**
+     * STEP 1 & 2: Initializes a reference to the local Bluetooth adapter.
+     */
+    public boolean initialize(Activity context) {
+        /* STEP 1: Set up BLE --> check whether the glass supports BLE */
+        this.activity = context;
+        if (!context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(context, "BLE is not supported on this device", Toast.LENGTH_SHORT).show();
+            context.finish();
+        }
+        /*  STEP 2: Ensure that BLE is enabled on device that supports BLE --> if disabled, request user to enable Bluetooth */
+        if (bluetoothManager == null) {
+            bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            if (bluetoothManager ==  null) {
+                Log.e(TAG, "Unable to initialize BluetoothManager.");
+                return false;
+            }
+        }
+        // Get Bluetooth adapter
+        bluetoothAdapter = bluetoothManager.getAdapter();
+        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+            Log.i(TAG, "Unable to obtain a BluetoothAdapter. Now requesting user to enable BLE");
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            context.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+        else {
+            Toast.makeText(activity, "Bluetooth is not available or disabled", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+    /**
+     * Connects to the GATT client - Bluetooth LE device.
+     *
+     * @param address The device address of the destination device.
+     *
+     * @return Return true if the connection is initiated successfully. The connection result
+     *         is reported asynchronously through the
+     *         {@code BluetoothGattServerCallback#onConnectionStateChange(android.bluetooth.BluetoothGattServer, int, int)}
+     *         callback.
+     */
+    public boolean connectClient(final String address) {
+        if (bluetoothAdapter == null || address == null) {
+            Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
+            return false;
+        }
+
+        // Previously connected device.  Try to reconnect.
+        if (bluetoothDeviceAddress != null && address.equals(bluetoothDeviceAddress)
+                && bluetoothGattServer != null) {
+            Log.d(TAG, "Trying to use an existing bluetoothGattServer for connection.");
+            //not sure
+            /*
+                A BluetoothGattServerCallback#onConnectionStateChange callback will be
+                invoked when the connection state changes as a result of this function
+                bluetoothGattServer.connect(...,...)
+            */
+            if (bluetoothGattServer.connect(device, false)) {
+                connectionState = STATE_CONNECTING;
+                Log.d(TAG, "Server is connecting to remote device");
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        final BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
+        if (device == null) {
+            Log.w(TAG, "Device not found.  Unable to connect.");
+            return false;
+        }
+        // We want to directly connect to the device, so we are setting the autoConnect
+        // parameter to false.
+        //------ NOT APPLICABLE -----
+        /*
+            b = device.connectGatt(this, false, mGattCallback);
+            Log.d(TAG, "Trying to create a new connection.");
+            mBluetoothDeviceAddress = address;
+            mConnectionState = STATE_CONNECTING;
+        */
+        return true;
+    }
+    /**
+     * Disconnect with a remove device
+     */
+    private void disconnectServer() {
+        if (bluetoothAdapter ==  null || bluetoothGattServer == null) {
+            Log.w(TAG, "GATT server was not initially initiated");
+        }
+        bluetoothGattServer.cancelConnection(device);
+    }
+    /**
      * Shut down the GATT server.
      */
     private void stopServer() {
-        if (bluetoothGattServer == null) return;
+        if (bluetoothGattServer == null) {
+            return;
+        }
+        Log.w(TAG, "bluetoothGattServer closed");
+        bluetoothDeviceAddress = null;
         bluetoothGattServer.close();
     }
+    /*@Override
+    public IBinder onBind(Intent intent) {
+        return mBinder;
+    }
 
-    /* A BluetoothGattServerCallback#onConnectionStateChange callback will be invoked when the connection state changes as a result of this function*/
-//    boolean connectToGatt = device.connect(this, false);
+    @Override
+    public boolean onUnbind(Intent intent) {
+        // After using a given device, you should make sure that BluetoothGatt.close() is called
+        // such that resources are cleaned up properly.  In this particular example, close() is
+        // invoked when the UI is disconnected from the Service.
+        close();
+        return super.onUnbind(intent);
+    }*/
+
+    /* -------------------------------------------------------------- */
+
+    // Implements callback methods for GATT events that the app cares about.  For example,
+    // connection change and services added --> what service?
 
     /* BluetoothGattServerCallback methods defined by the BLE API*/
     private final BluetoothGattServerCallback gattServerCallback =
@@ -89,8 +210,9 @@ public class BluetoothLeService extends Service {
                         connectionState = STATE_CONNECTED;
                         broadcastUpdate(intentAction);
                         Log.i(TAG, "Connected to GATT server.");
-//                        Log.i(TAG, "Attempting to start service discovery:" +
-//                                bluetoothGatt.discoverServices());
+                        Log.i(TAG, "Attempting to start adding services:" +
+                                bluetoothGattServer.addService());
+                        //how do I know what services to add?
                     }
                     else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                         intentAction = ACTION_GATT_DISCONNECTED;
@@ -99,23 +221,36 @@ public class BluetoothLeService extends Service {
                         Log.i(TAG, "Disconnected from GATT server.");
                     }
                 };
+                /*
+                    A method analogous to onServicesDiscoverd of BluetoothGatt
+                    Indicates whether a local service has been added successfully
+                */
+                @Override
+                public void onServiceAdded(int status, BluetoothGattService service) {
+                    if (status == BluetoothGatt.GATT_SUCCESS){
+                        Log.w(TAG, "bluetoothGattServer = " + bluetoothGattServer);
+                        broadcastUpdate(ACTION_GATT_SERVICES_ADDED);
+                    }
+                    else {
+                        Log.w(TAG, "onServiceAdded received: " + status);
+                    }
+                }
+                /*
+                    A remote client has requested to read a local characteristic
+                 */
 
                 @Override
-                public void onCharacteristicWriteRequest (BluetoothDevice device,
-                                                          int requestId,
-                                                          BluetoothGattCharacteristic characteristic,
-                                                          boolean preparedWrite,
-                                                          boolean responseNeeded,
-                                                          int offset,
-                                                          byte[] value) {
-                    if (/* condition */ 1+1 == 2) {
-                        // broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+                public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
+                    //Send a response to a read request to a remote device
+                    //--- my draft code, not totally sure what status, offs
+                    int status =  1;
+                    byte[] data = characteristic.getValue();
+                    boolean resSent = bluetoothGattServer.sendResponse(device, requestId, status, offset, data);
+                    if(resSent == true) {
+                        broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
                     }
                 }
             };
-
-
-
 
     //populate data to app
     private void broadcastUpdate(final String action) {
@@ -157,7 +292,7 @@ public class BluetoothLeService extends Service {
 //                invalidateOptionsMenu();
 //                clearUI();
             } else if (BluetoothLeService.
-                    ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                    ACTION_GATT_SERVICES_ADDED.equals(action)) {
                 // Show all the supported services and characteristics on the
                 // user interface.
 //                displayGattServices(bluetoothLeService.getSupportedGattServices());
@@ -166,6 +301,7 @@ public class BluetoothLeService extends Service {
             }
         }
     };
+
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.

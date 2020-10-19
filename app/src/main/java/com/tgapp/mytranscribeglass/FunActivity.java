@@ -16,7 +16,7 @@ public class FunActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fun);
-        replyMessage = (EditText) findViewById(R.id.minutes_text_content);
+        replyMessage = (EditText) findViewById(R.id.number_text);
     }
 
     public void returnCalculationInMins(View view) {
