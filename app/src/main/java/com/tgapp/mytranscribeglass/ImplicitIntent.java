@@ -58,11 +58,11 @@ public class ImplicitIntent extends AppCompatActivity {
     }
 
     public void doAdd(View view) {
-        int num1 = Integer.parseInt(e1.getText().toString());
-        int num2 = Integer.parseInt(e2.getText().toString());
-        int sum = num1 + num2;
-        t1.setText(sum);
-        Log.i(TAG, "Executed last");
+//        int num1 = Integer.parseInt(e1.getText().toString());
+//        int num2 = Integer.parseInt(e2.getText().toString());
+//        int sum = num1 + num2;
+//        t1.setText(sum);
+//        Log.i(TAG, "Executed last");
     }
     public double add(double i1, double i2) {
         double sum = i1 + i2;

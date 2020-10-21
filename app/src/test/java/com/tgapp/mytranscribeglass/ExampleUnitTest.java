@@ -21,15 +21,15 @@ public class ExampleUnitTest {
     public void setUp() {
         mImplicit = new ImplicitIntent();
     }
-    @Test
-    public void addTwoNumbers() {
-        assertEquals(.3d, .1d+.2d, .03d);//relaxationß
-    }
-    @Test
-    public void addTwoNumbersFloat() {
-        double result = mImplicit.add(2.55f,3.77f);
-        assertThat("hey there", result, is(equalTo(6.32)));
-    }
+//    @Test
+//    public void addTwoNumbers() {
+//        assertEquals(.3d, .1d+.2d, .03d);//relaxationß
+//    }
+//    @Test
+//    public void addTwoNumbersFloat() {
+//        double result = mImplicit.add(2.55f,3.77f);
+//        assertThat("hey there", result, is(equalTo(6.32)));
+//    }
 
     @Test
     public void addition_isCorrect() {

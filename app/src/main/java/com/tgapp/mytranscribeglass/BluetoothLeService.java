@@ -210,8 +210,8 @@ public class BluetoothLeService extends Service {
                         connectionState = STATE_CONNECTED;
                         broadcastUpdate(intentAction);
                         Log.i(TAG, "Connected to GATT server.");
-                        Log.i(TAG, "Attempting to start adding services:" +
-                                bluetoothGattServer.addService());
+                        Log.i(TAG, "Attempting to start adding services:" );
+//                                bluetoothGattServer.addService());
                         //how do I know what services to add?
                     }
                     else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -276,7 +276,6 @@ public class BluetoothLeService extends Service {
         }
         sendBroadcast(intent);
     }
-
     // Handles various events fired by the Service.
     private final BroadcastReceiver gattUpdateReceiver = new BroadcastReceiver() {
         @Override

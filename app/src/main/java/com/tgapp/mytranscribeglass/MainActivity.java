@@ -26,8 +26,6 @@ public class MainActivity extends AppCompatActivity {
         resultIntent = new Intent(this, FunActivity.class);
         Toast.makeText(this, "onCreate done", Toast.LENGTH_SHORT).show();
         Log.i("MainActivity", "onCreate");
-
-
     }
     public void activateGgASR(View v) {
         funIntent = new Intent(this, FunActivity.class);
