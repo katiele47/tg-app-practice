@@ -78,7 +78,7 @@ public class BluetoothLeService extends Service {
     /**
      * STEP 1 & 2: Initializes a reference to the local Bluetooth adapter.
      */
-    public boolean initialize(Activity context) {
+    public boolean initBluetoothLE(Activity context) {
         /* STEP 1: Set up BLE --> check whether the glass supports BLE */
         this.activity = context;
         if (!context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -281,22 +281,22 @@ public class BluetoothLeService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+            switch (action) {
+                case BluetoothLeService.ACTION_GATT_CONNECTED:
 //                connected = true;
 //                updateConnectionState(R.string.connected);
 //                invalidateOptionsMenu();
-            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                case BluetoothLeService.ACTION_GATT_DISCONNECTED:
 //                connected = false;
 //                updateConnectionState(R.string.disconnected);
 //                invalidateOptionsMenu();
 //                clearUI();
-            } else if (BluetoothLeService.
-                    ACTION_GATT_SERVICES_ADDED.equals(action)) {
-                // Show all the supported services and characteristics on the
-                // user interface.
+                case BluetoothLeService.ACTION_GATT_SERVICES_ADDED:
+                    // Show all the supported services and characteristics on the
+                    // user interface.
 //                displayGattServices(bluetoothLeService.getSupportedGattServices());
-            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-//                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                case BluetoothLeService.ACTION_DATA_AVAILABLE:
+//                    displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
             }
         }
     };
