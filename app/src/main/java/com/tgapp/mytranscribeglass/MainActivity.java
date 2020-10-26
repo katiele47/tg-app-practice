@@ -5,11 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,32 +45,17 @@ public class MainActivity extends AppCompatActivity {
         filterCustom.addAction(CUSTOM_ACTION);
         filterCustom.addCategory(Intent.CATEGORY_DEFAULT);
         this.registerReceiver(cbr, filterCustom);
-
-
         Toast.makeText(this, "onCreate done", Toast.LENGTH_SHORT).show();
         Log.i("MainActivity", "onCreate");
     }
-    public void activateGgASR(View v) {
-        funIntent = new Intent(this, FunActivity.class);
-//        startActivity(funIntent);
-        startActivityForResult(funIntent, REQUEST_CODE);
-        Log.i(TAG, "Button clicked");
+
+    public void startBluetoothService(View view) {
+        Intent bleIntent = new Intent(this, BluetoothLeService.class);
+        startService(bleIntent);
     }
-    public void goToImplicitAction(View view) {
-        Intent impIntent = new Intent(this, ImplicitIntent.class);
-        startActivity(impIntent);
-        Log.i(TAG, "User went to ImplicitIntent action");
-    }
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE) { //in case there are multiple codes ~ multiple requests
-            if(resultCode == RESULT_OK) {
-                String replyMessage = data.getStringExtra(FunActivity.EXTRA_REPLY_KEY);
-                minuteResult.setVisibility(View.VISIBLE);
-                minuteResult.setText(replyMessage);
-            }
-        }
+    public void stopBluetoothService(View view) {
+        Intent bleIntent = new Intent(this, BluetoothLeService.class);
+        stopService(bleIntent);
     }
     public void callCustomBroadcast(View view) {
         Intent customIntent = new Intent();
@@ -114,6 +97,27 @@ public class MainActivity extends AppCompatActivity {
 //        Log.i("MainActivity", "onRestart");
 //    }
 //
+    public void goToImplicitAction(View view) {
+        Intent impIntent = new Intent(this, ImplicitIntent.class);
+        startActivity(impIntent);
+        Log.i(TAG, "User went to ImplicitIntent action");
+    }
+    public void goToFunActivity(View v) {
+        funIntent = new Intent(this, FunActivity.class);
+        startActivityForResult(funIntent, REQUEST_CODE);
+        Log.i(TAG, "Button clicked");
+    }
+//    @Override
+//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        if (requestCode == REQUEST_CODE) { //in case there are multiple codes ~ multiple requests
+//            if(resultCode == RESULT_OK) {
+//                String replyMessage = data.getStringExtra(FunActivity.EXTRA_REPLY_KEY);
+//                minuteResult.setVisibility(View.VISIBLE);
+//                minuteResult.setText(replyMessage);
+//            }
+//        }
+//    }
     @Override
     protected void onDestroy() {
         super.onDestroy();

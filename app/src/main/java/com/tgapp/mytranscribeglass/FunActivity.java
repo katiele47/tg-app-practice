@@ -52,13 +52,13 @@ public class FunActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fun);
-        replyMessage = (EditText) findViewById(R.id.number_text);
-        mt1 = findViewById(R.id.mtv1);
+//        replyMessage = (EditText) findViewById(R.id.number_text);
+//        mt1 = findViewById(R.id.mtv1);
         /*
             Connect to the Internet practice
         */
-        myInternetText = findViewById(R.id.myResult);
-        myImage = findViewById(R.id.myImgResult);
+//        myInternetText = findViewById(R.id.myResult);
+//        myImage = findViewById(R.id.myImgResult);
 
         myConnManager= (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         myInfo = myConnManager.getActiveNetworkInfo();

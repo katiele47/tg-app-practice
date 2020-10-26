@@ -1,12 +1,13 @@
 <resources>
     <string name="app_name">My TranscribeGlass</string>
-    <string name="main_text">Your pick</string>
+    <string name="main_text">Your caption source pick</string>
     <string name="button1">Go to Fun</string>
 
     <string name="captionPara">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam eu arcu eu odio dictum fermentum. Nullam eleifend mi ac turpis condimentum convallis. Quisque condimentum nisi ut eros convallis, eu blandit ex hendrerit. Nam accumsan quam sapien, eleifend commodo libero faucibus eget. Donec sit amet turpis arcu. Vivamus id urna convallis, accumsan nisi ac, ullamcorper odio. Fusce tincidunt velit eu blandit suscipit. Nulla nisi enim, consequat in turpis vel, ultrices consequat erat. Cras ac justo nibh. Sed non vulputate nisi, ac aliquet tellus. Proin eleifend massa at suscipit vulputate. Fusce lobortis pellentesque velit, vel dignissim elit vestibulum et. Nunc eget varius tellus.</string>
     <string name="buttonASR">Calculate</string>
     <string name="minute_text_box"></string>
     <string name="implicit_btn">Go to Implicit</string>
+    <string name="button_ble_service">Connect to Bluetooth</string>
 
 
 </resources>
