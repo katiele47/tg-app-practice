@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.LinkedList;
+
 public class MainActivity extends AppCompatActivity {
 
     static TextView mainText;
@@ -20,8 +22,10 @@ public class MainActivity extends AppCompatActivity {
     private final static String TAG = BluetoothLeService.class.getSimpleName();
     public static final int REQUEST_CODE = 2;
 
+
     //registering system broadcast within Activity context
     BroadcastReceiver br = new BroadcastInBuilt();
+
     // ------ custom broadcast
     BroadcastReceiver cbr = new CustomBroadcast();
     public static final String CUSTOM_ACTION = "com.mylollipop.rita.MyCustomReceiver.call";

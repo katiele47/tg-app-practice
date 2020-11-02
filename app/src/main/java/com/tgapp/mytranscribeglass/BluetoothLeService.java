@@ -81,7 +81,6 @@ public class BluetoothLeService extends Service {
         Toast.makeText(this, "BluetoothLe service starting", Toast.LENGTH_SHORT).show();
         return START_NOT_STICKY; //mStartMode;
     }
-
     @Override
     public IBinder onBind(Intent intent) {
         // A client is binding to the service with bindService()
@@ -108,10 +107,6 @@ public class BluetoothLeService extends Service {
         Toast.makeText(this, "BluetoothLe service destroyed", Toast.LENGTH_SHORT).show();
     }
 }
-
-
-
-
     /**
      * Initialize the GATT server instance
      */
@@ -324,7 +319,7 @@ public class BluetoothLeService extends Service {
 //        }
 //        sendBroadcast(intent);
 //    }
-//    // Handles various events fired by the Service.
+    // Handles various events fired by the Service.
 //    private final BroadcastReceiver gattUpdateReceiver = new BroadcastReceiver() {
 //        @Override
 //        public void onReceive(Context context, Intent intent) {

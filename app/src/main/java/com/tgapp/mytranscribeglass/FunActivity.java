@@ -1,20 +1,23 @@
 package com.tgapp.mytranscribeglass;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ActionMode;
+import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -28,12 +31,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Random;
 
 public class FunActivity extends AppCompatActivity {
 
+    private final static String TAG = FunActivity.class.getSimpleName();
     private EditText replyMessage;
     public static final String EXTRA_REPLY_KEY =
             "baby.funny.calculation";
@@ -48,6 +51,10 @@ public class FunActivity extends AppCompatActivity {
     NetworkInfo myInfo;
     MyImageAsync mimg1;
 
+    /* Context menus (floating and bar)*/
+    EditText e1,e2;
+    private ActionMode mActionMode;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,20 +66,117 @@ public class FunActivity extends AppCompatActivity {
         */
 //        myInternetText = findViewById(R.id.myResult);
 //        myImage = findViewById(R.id.myImgResult);
-
         myConnManager= (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         myInfo = myConnManager.getActiveNetworkInfo();
 
         //instance state of MySecondAsync
-        if(savedInstanceState!=null) {
-            mt1.setText(savedInstanceState.getString(TEXT_STATE));
+//        if(savedInstanceState!=null) {
+//            mt1.setText(savedInstanceState.getString(TEXT_STATE));
+//        }
+
+        e1 =  (EditText) findViewById(R.id.editContext1);
+        registerForContextMenu(e1);
+
+        //Contextual action menu
+        e2 = (EditText) findViewById(R.id.editContext2);
+        e2.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if (mActionMode != null) return false;
+                mActionMode = FunActivity.this.startActionMode(mActionModeCallback);
+                e2.setSelected(true);
+                return true;
+            }
+        });
+    }
+//    @Override
+//    protected void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        // Save the state of the TextView
+//        outState.putString(TEXT_STATE, mt1.getText().toString());
+//    }
+
+    public ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
+            getMenuInflater().inflate(R.menu.edit2_menu, menu);
+            return true;
+        }
+        @Override
+        public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
+            switch (menuItem.getItemId()) {
+                case R.id.edit2_menu_i1:
+                    Toast.makeText(getApplicationContext(), "Action bar item1 clicked", Toast.LENGTH_SHORT).show();
+                    actionMode.finish(); //action picked, so close the action bar
+                    break;
+                case R.id.edit2_menu_i2:
+                    Toast.makeText(getApplicationContext(), "Action bar item2 clicked", Toast.LENGTH_SHORT).show();
+                    actionMode.finish(); //action picked, so close the action bar
+                    break;
+                default:
+                    return false;
+            }
+            return true;
+        }
+        @Override
+        public void onDestroyActionMode(ActionMode actionMode) {
+            mActionMode = null;
+            Toast.makeText(getApplicationContext(), "Action bar menu closed", Toast.LENGTH_SHORT).show();
+        }
+    };
+    /* Options Menu */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.options_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.o_menu_setting:
+                //go to ImplicitIntent Activity
+                Intent settingIntent = new Intent(this, ImplicitIntent.class);
+                startActivity(settingIntent);
+            case R.id.o_menu_ble:
+                Toast.makeText(this, "Bluetooth clicked", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.o_menu_eat:
+                Toast.makeText(this, "Eat clicked", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
+    }
+    /* Context Menu */
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        switch (v.getId()){
+            case R.id.editContext1: //floating
+                getMenuInflater().inflate(R.menu.edit1_menu, menu);
+                break;
         }
     }
+
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // Save the state of the TextView
-        outState.putString(TEXT_STATE, mt1.getText().toString());
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.edit1_menu_i1:
+                Toast.makeText(this, "Floating item1 clicked", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.edit1_menu_i2:
+                Toast.makeText(this, "Floating item2 clicked", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                return super.onContextItemSelected(item);
+        }
+        return true;
     }
 
     public void returnCalculationInMins(View view) {
@@ -107,6 +211,18 @@ public class FunActivity extends AppCompatActivity {
             Toast.makeText(this, "No Network Connection", Toast.LENGTH_LONG).show();
         }
     }
+
+    public void goToRecyclerView(View view) {
+        Intent rvIntent = new Intent(this, RecyclerActivity.class);
+        startActivity(rvIntent);
+        Log.i(TAG, "User went to RecyclerView activity");
+    }
+
+    public void goToSwipeTabs(View view) {
+        Intent swipeIntent = new Intent(this, SwipeTabsActivity.class);
+        startActivity(swipeIntent);
+    }
+
     public class MyImageAsync extends AsyncTask<String, Void, Bitmap>{
 
         Context ctx;
